@@ -15,11 +15,17 @@ conn = psycopg2.connect(
 cur = conn.cursor()
 
 # Insert data
-for _, row in df.iterrows():
-    cur.execute(
-        "INSERT INTO data (month, invoices, amount) VALUES (%s, %s, %s)",
-        (row['Month'], row['Invoices'], row['Amount'])
-    )
+from psycopg2.extras import execute_values
+
+# Convert dataframe to list of tuples
+data_tuples = list(df.itertuples(index=False, name=None))
+
+# Bulk insert
+execute_values(
+    cur,
+    "INSERT INTO data (month, invoices, amount) VALUES %s",
+    data_tuples
+)
 
 conn.commit()
 cur.close()
